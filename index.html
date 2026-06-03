@@ -1,0 +1,2462 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+<title>Free Fire Reward Zone — Elite Edition</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;700;800;900&family=Rajdhani:wght@500;600;700&display=swap" rel="stylesheet"/>
+<style>
+:root {
+  --bg: #040507;
+  --card: rgba(12, 14, 20, 0.85);
+  --card-hover: rgba(22, 25, 36, 0.95);
+  --border: rgba(255, 107, 0, 0.15);
+  --accent: #ff5100; /* Neon Fire Orange */
+  --accent2: #ffcc00; /* Gold */
+  --cyan: #00f0ff;
+  --green: #00ff66;
+  --red: #ff2a2a;
+  --text: #f3f4f6;
+  --muted: #7f899c;
+  --radius: 16px;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+}
+
+body {
+  background: var(--bg);
+  background-image: linear-gradient(180deg, rgba(4, 5, 7, 0.45) 0%, rgba(4, 5, 7, 0.95) 100%), url('free_fire_bg.png');
+  background-size: cover;
+  background-position: center;
+  background-attachment: fixed;
+  color: var(--text);
+  font-family: 'Rajdhani', sans-serif;
+  min-height: 100vh;
+  overflow-x: hidden;
+  position: relative;
+  padding-bottom: 110px;
+}
+
+/* Background Fire Canvas */
+#fireCanvas {
+  position: fixed;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  opacity: 0.75;
+}
+
+.container {
+  max-width: 480px;
+  margin: 0 auto;
+  padding: 16px;
+  position: relative;
+  z-index: 2;
+}
+
+/* Header */
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 0 14px;
+  border-bottom: 1px dashed rgba(255, 107, 0, 0.25);
+  margin-bottom: 16px;
+}
+
+.logo {
+  font-family: 'Orbitron', sans-serif;
+  font-weight: 900;
+  font-size: 18px;
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  text-shadow: 0 0 15px rgba(255, 107, 0, 0.3);
+}
+
+.logo span {
+  font-size: 11px;
+  color: #fff;
+  border: 1px solid var(--cyan);
+  padding: 1px 5px;
+  border-radius: 4px;
+  background: rgba(0, 240, 255, 0.1);
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.header-controls {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.mute-btn {
+  background: rgba(0,0,0,0.5);
+  border: 1px solid var(--border);
+  color: var(--muted);
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 16px;
+  transition: all 0.2s;
+}
+
+.mute-btn.active {
+  color: var(--accent2);
+  border-color: var(--accent2);
+  box-shadow: 0 0 8px rgba(255, 204, 0, 0.2);
+}
+
+.user-avatar {
+  width: 38px;
+  height: 38px;
+  border-radius: 8px;
+  background: linear-gradient(135deg, var(--accent), #ff004f);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  font-family: 'Orbitron', sans-serif;
+  font-weight: 800;
+  color: #fff;
+  box-shadow: 0 0 10px rgba(255, 107, 0, 0.4);
+  border: 2px solid var(--accent2);
+  transform: rotate(-3deg);
+}
+
+/* Rank Progression HUD widget */
+.rank-widget {
+  background: linear-gradient(135deg, rgba(30, 15, 5, 0.9) 0%, rgba(10, 12, 20, 0.95) 100%);
+  border: 2px solid var(--accent);
+  border-radius: 20px;
+  padding: 16px;
+  margin-bottom: 16px;
+  box-shadow: 0 8px 25px rgba(0,0,0,0.6);
+  position: relative;
+  overflow: hidden;
+}
+
+.rank-widget::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; width: 100%; height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 107, 0, 0.05), transparent);
+  transform: translateX(-100%);
+  animation: shine 4s infinite linear;
+}
+
+@keyframes shine {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+
+.rank-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.rank-details {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.rank-badge {
+  font-size: 28px;
+  animation: pulseBadge 2s infinite alternate;
+}
+
+@keyframes pulseBadge {
+  0% { transform: scale(0.95); filter: drop-shadow(0 0 2px rgba(255,107,0,0.2)); }
+  100% { transform: scale(1.05); filter: drop-shadow(0 0 10px rgba(255,204,0,0.5)); }
+}
+
+.rank-title {
+  font-family: 'Orbitron', sans-serif;
+  font-weight: 900;
+  font-size: 16px;
+  color: #fff;
+  letter-spacing: 0.5px;
+  display: flex;
+  flex-direction: column;
+}
+
+.rank-title span {
+  font-size: 10px;
+  color: var(--muted);
+  font-family: 'Rajdhani', sans-serif;
+  font-weight: 500;
+  text-transform: uppercase;
+}
+
+.rank-multiplier {
+  background: rgba(0, 255, 102, 0.1);
+  border: 1px solid var(--green);
+  border-radius: 6px;
+  padding: 4px 8px;
+  font-family: 'Orbitron', sans-serif;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--green);
+}
+
+.rank-progress-bar {
+  height: 6px;
+  background: rgba(0,0,0,0.5);
+  border-radius: 99px;
+  overflow: hidden;
+  border: 1px solid rgba(255,255,255,0.05);
+}
+
+.rank-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--accent), var(--accent2));
+  border-radius: 99px;
+  width: 0%;
+  transition: width 0.6s ease;
+}
+
+.rank-progress-text {
+  display: flex;
+  justify-content: space-between;
+  font-size: 11px;
+  color: var(--muted);
+  margin-top: 4px;
+}
+
+.rank-progress-text b {
+  color: var(--accent2);
+}
+
+/* Balance Card (Sleek Battle HUD) */
+.balance-card {
+  background: linear-gradient(135deg, rgba(14, 16, 22, 0.95) 0%, rgba(6, 7, 10, 0.98) 100%);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 20px 16px;
+  margin-bottom: 20px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.7);
+  border-top: 2px solid var(--accent);
+}
+
+.balance-label {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  color: var(--muted);
+  margin-bottom: 6px;
+  font-weight: 700;
+}
+
+.balance-flex {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.balance-points {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 34px;
+  font-weight: 900;
+  color: #fff;
+  text-shadow: 0 0 15px rgba(255,255,255,0.05);
+}
+
+.balance-points span {
+  font-size: 14px;
+  color: var(--muted);
+  font-family: 'Rajdhani', sans-serif;
+  font-weight: 600;
+}
+
+.diamond-equivalent {
+  background: rgba(0, 240, 255, 0.08);
+  border: 1px solid var(--cyan);
+  border-radius: 8px;
+  padding: 4px 10px;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-family: 'Orbitron', sans-serif;
+  font-weight: 800;
+  font-size: 14px;
+  color: var(--cyan);
+}
+
+.diamond-equivalent img {
+  width: 16px;
+  height: 16px;
+}
+
+.balance-stats {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 8px;
+}
+
+.stat-box {
+  background: rgba(0,0,0,0.5);
+  border-radius: 10px;
+  padding: 8px 4px;
+  text-align: center;
+  border: 1px solid rgba(255, 107, 0, 0.08);
+}
+
+.stat-val {
+  font-family: 'Orbitron', sans-serif;
+  font-weight: 700;
+  font-size: 14px;
+  color: var(--accent2);
+}
+
+.stat-lbl {
+  font-size: 9px;
+  color: var(--muted);
+  margin-top: 1px;
+  text-transform: uppercase;
+}
+
+/* Cards & Layout */
+.section-title {
+  font-family: 'Orbitron', sans-serif;
+  font-weight: 900;
+  font-size: 13px;
+  margin: 22px 0 10px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #fff;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.section-title span {
+  width: 3px;
+  height: 14px;
+  background: var(--accent);
+  border-radius: 2px;
+  display: block;
+}
+
+.ad-card, .ref-card, .withdraw-card, .profile-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px;
+  margin-bottom: 10px;
+  backdrop-filter: blur(15px);
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+}
+
+.ad-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; width: 2px; height: 100%;
+  background: var(--accent);
+}
+
+.ad-flex {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.ad-icon {
+  width: 38px;
+  height: 38px;
+  border-radius: 8px;
+  background: rgba(255, 107, 0, 0.08);
+  border: 1px solid rgba(255, 107, 0, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+}
+
+.ad-info {
+  flex: 1;
+}
+
+.ad-title {
+  font-weight: 700;
+  font-size: 14px;
+  color: #fff;
+}
+
+.ad-sub {
+  font-size: 11px;
+  color: var(--muted);
+}
+
+.ad-sub b {
+  color: var(--accent2);
+}
+
+.btn-action {
+  background: linear-gradient(135deg, var(--accent), #ff3c00);
+  border: none;
+  color: #fff;
+  border-radius: 8px;
+  padding: 8px 14px;
+  font-family: 'Orbitron', sans-serif;
+  font-size: 11px;
+  font-weight: 800;
+  cursor: pointer;
+  transition: all 0.2s;
+  min-width: 76px;
+  text-align: center;
+  box-shadow: 0 4px 10px rgba(255, 81, 0, 0.25);
+}
+
+.btn-action:active {
+  transform: scale(0.95);
+}
+
+.btn-action:disabled {
+  background: rgba(255,255,255,0.05) !important;
+  color: var(--muted) !important;
+  border: 1px solid rgba(255,255,255,0.05);
+  box-shadow: none;
+  cursor: not-allowed;
+}
+
+/* Generators (Slots) Grid */
+.gen-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.gen-card {
+  background: linear-gradient(135deg, rgba(16,18,26,0.9) 0%, rgba(6,7,10,0.95) 100%);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 14px;
+  text-align: center;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 5px 12px rgba(0,0,0,0.5);
+  transition: all 0.25s;
+}
+
+.gen-card:hover {
+  transform: translateY(-2px);
+  border-color: var(--accent);
+  box-shadow: 0 8px 20px rgba(255, 107, 0, 0.2);
+}
+
+.gen-card.active-ad {
+  pointer-events: none;
+  opacity: 0.55;
+  border-color: var(--red);
+}
+
+.gen-icon {
+  width: 32px;
+  height: 32px;
+  background: rgba(255, 107, 0, 0.08);
+  border-radius: 50%;
+  margin: 0 auto 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--accent);
+  font-size: 16px;
+  border: 1px solid rgba(255, 107, 0, 0.2);
+}
+
+.gen-title {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: var(--muted);
+  letter-spacing: 0.5px;
+}
+
+.gen-reward {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 14px;
+  font-weight: 800;
+  color: var(--accent2);
+  margin-top: 2px;
+}
+
+.gen-count {
+  background: rgba(0,0,0,0.5);
+  border-radius: 99px;
+  border: 1px solid rgba(255,255,255,0.05);
+  padding: 2px 8px;
+  font-size: 9px;
+  color: var(--muted);
+  display: inline-block;
+  margin-top: 6px;
+}
+
+/* Lucky Spin Wheel HUD */
+.wheel-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 18px;
+  padding: 10px 0;
+}
+
+.wheel-wrapper {
+  position: relative;
+  width: 250px;
+  height: 250px;
+}
+
+.wheel-canvas {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  border: 5px solid var(--accent);
+  box-shadow: 
+    0 0 20px rgba(255, 81, 0, 0.4),
+    inset 0 0 15px rgba(0,0,0,0.6);
+  background: #0f1118;
+  transform: rotate(0deg);
+  transition: transform 4s cubic-bezier(0.1, 0.8, 0.1, 1);
+}
+
+.wheel-pointer {
+  position: absolute;
+  top: -15px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 30px;
+  height: 30px;
+  z-index: 10;
+  background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%23ff5100"><path d="M12 21l-8-12h16z"/></svg>');
+  background-size: contain;
+  background-position: center;
+  background-repeat: no-repeat;
+  filter: drop-shadow(0 4px 5px rgba(0,0,0,0.5));
+}
+
+.wheel-center {
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: radial-gradient(circle, #fff, var(--accent2), var(--accent));
+  border: 3px solid #000;
+  z-index: 5;
+  box-shadow: 0 0 10px rgba(0,0,0,0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+}
+
+.btn-spin {
+  background: linear-gradient(135deg, var(--accent2), #e69d00);
+  color: #000;
+  font-family: 'Orbitron', sans-serif;
+  font-weight: 900;
+  border: none;
+  border-radius: 12px;
+  padding: 14px 28px;
+  font-size: 14px;
+  cursor: pointer;
+  box-shadow: 0 5px 15px rgba(255, 204, 0, 0.3);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.btn-spin:active {
+  transform: scale(0.96);
+}
+
+.btn-spin:disabled {
+  background: rgba(255,255,255,0.05);
+  color: var(--muted);
+  box-shadow: none;
+  cursor: not-allowed;
+}
+
+/* Redeem Store Grid */
+.redeem-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.redeem-item {
+  background: var(--card);
+  border: 1px solid rgba(0, 240, 255, 0.12);
+  border-radius: var(--radius);
+  padding: 14px;
+  text-align: center;
+  cursor: pointer;
+  position: relative;
+  transition: all 0.25s;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+}
+
+.redeem-item:hover {
+  border-color: var(--cyan);
+  background: rgba(0, 240, 255, 0.04);
+}
+
+.redeem-item.selected {
+  border-color: var(--cyan);
+  background: rgba(0, 240, 255, 0.08);
+  box-shadow: 0 0 15px rgba(0, 240, 255, 0.25);
+  transform: scale(1.02);
+}
+
+.redeem-icon {
+  width: 40px;
+  height: 34px;
+  margin: 0 auto 6px;
+  background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%2300f0ff"><path d="M12 2L2 9l10 13 10-13L12 2z"/></svg>');
+  background-size: contain;
+  background-position: center;
+  background-repeat: no-repeat;
+  filter: drop-shadow(0 0 4px rgba(0, 240, 255, 0.4));
+}
+
+.redeem-icon.membership {
+  background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%23ffcc00"><path d="M2 17h20v2H2zm11.84-9.21L20 22h-3l-3.05-9.14L10.87 22H8l6.16-14.21M12 2a4 4 0 1 1-4 4 4 4 0 0 1 4-4z"/></svg>');
+  filter: drop-shadow(0 0 4px rgba(255, 204, 0, 0.4));
+}
+
+.redeem-title {
+  font-family: 'Orbitron', sans-serif;
+  font-weight: 800;
+  font-size: 13px;
+  color: #fff;
+}
+
+.redeem-cost {
+  font-size: 12px;
+  color: var(--cyan);
+  margin-top: 2px;
+  font-weight: 700;
+}
+
+.redeem-cost.gold {
+  color: var(--accent2);
+}
+
+/* Withdraw Forms */
+.withdraw-locked-panel {
+  display: block;
+}
+
+.withdraw-form-panel {
+  display: none;
+  animation: slideUp 0.3s ease-out;
+}
+
+@keyframes slideUp {
+  from { transform: translateY(12px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+.input-group {
+  margin-bottom: 10px;
+}
+
+.input-label {
+  font-size: 10px;
+  color: var(--muted);
+  margin-bottom: 4px;
+  display: block;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-weight: 700;
+}
+
+.input-field {
+  width: 100%;
+  background: rgba(0, 0, 0, 0.4);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 10px 12px;
+  color: var(--text);
+  font-size: 13px;
+  font-family: 'Rajdhani', sans-serif;
+  font-weight: 600;
+  outline: none;
+  transition: all 0.25s;
+}
+
+.input-field:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 8px rgba(255, 81, 0, 0.25);
+}
+
+.btn-redeem {
+  width: 100%;
+  padding: 12px;
+  background: linear-gradient(135deg, var(--cyan), #00a4ff);
+  border: none;
+  border-radius: 8px;
+  color: #000;
+  font-family: 'Orbitron', sans-serif;
+  font-weight: 900;
+  font-size: 13px;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(0, 240, 255, 0.25);
+  text-transform: uppercase;
+  margin-top: 8px;
+  transition: all 0.2s;
+}
+
+.btn-redeem:active {
+  transform: scale(0.97);
+}
+
+/* Referrals Link and Progress */
+.ref-progress-flex {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 4px;
+}
+
+.ref-bar {
+  height: 6px;
+  background: rgba(0,0,0,0.5);
+  border-radius: 99px;
+  overflow: hidden;
+  border: 1px solid rgba(255,255,255,0.05);
+}
+
+.ref-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--accent), var(--accent2));
+  border-radius: 99px;
+  width: 0%;
+  transition: width 0.5s ease;
+}
+
+.ref-link-box {
+  background: rgba(0,0,0,0.4);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.ref-link-text {
+  font-size: 11px;
+  color: var(--muted);
+  word-break: break-all;
+  flex: 1;
+  font-family: monospace;
+}
+
+/* History */
+.history-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.history-item {
+  background: rgba(0,0,0,0.3);
+  border: 1px solid rgba(255,255,255,0.03);
+  border-radius: 8px;
+  padding: 8px 12px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.history-left {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.status-badge {
+  font-size: 8px;
+  padding: 2px 8px;
+  border-radius: 99px;
+  font-weight: 700;
+  text-transform: uppercase;
+  font-family: 'Orbitron', sans-serif;
+}
+
+.status-pending { background: rgba(255, 204, 0, 0.1); color: var(--accent2); border: 1px solid var(--accent2); }
+.status-paid { background: rgba(0, 255, 102, 0.1); color: var(--green); border: 1px solid var(--green); }
+.status-rejected { background: rgba(255, 42, 42, 0.1); color: var(--red); border: 1px solid var(--red); }
+
+/* Bottom Nav Bar */
+.bottom-nav {
+  position: fixed;
+  bottom: 14px;
+  left: 14px;
+  right: 14px;
+  background: rgba(4, 5, 8, 0.97);
+  backdrop-filter: blur(20px);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  display: flex;
+  z-index: 100;
+  padding: 4px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.8);
+}
+
+.nav-item {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 6px 0;
+  cursor: pointer;
+  color: var(--muted);
+  gap: 2px;
+  border-radius: 14px;
+  transition: all 0.2s;
+  border: 1px solid transparent;
+}
+
+.nav-item.active {
+  color: #fff;
+  background: rgba(255, 81, 0, 0.1);
+  box-shadow: inset 0 1px 0 rgba(255, 81, 0, 0.1);
+  border-color: rgba(255, 81, 0, 0.15);
+}
+
+.nav-icon {
+  font-size: 16px;
+  transition: transform 0.25s;
+}
+
+.nav-item.active .nav-icon {
+  transform: translateY(-1px) scale(1.05);
+}
+
+.nav-label {
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-family: 'Orbitron', sans-serif;
+  font-weight: 700;
+}
+
+.page {
+  display: none;
+  animation: pageFadeIn 0.3s ease-out;
+}
+
+.page.active {
+  display: block;
+}
+
+@keyframes pageFadeIn {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Toast Notification */
+.toast {
+  position: fixed;
+  bottom: 90px;
+  left: 50%;
+  transform: translateX(-50%) translateY(15px);
+  background: var(--accent);
+  color: #fff;
+  padding: 8px 16px;
+  border-radius: 99px;
+  font-size: 11px;
+  font-family: 'Orbitron', sans-serif;
+  font-weight: 700;
+  opacity: 0;
+  transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  z-index: 99999;
+  pointer-events: none;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+  text-align: center;
+  white-space: nowrap;
+}
+
+.toast.show {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
+/* Loading Panel */
+.loading-screen {
+  position: fixed;
+  inset: 0;
+  background: var(--bg);
+  background-image: linear-gradient(180deg, rgba(4, 5, 7, 0.75) 0%, rgba(4, 5, 7, 0.98) 100%), url('free_fire_bg.png');
+  background-size: cover;
+  background-position: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 12px;
+  z-index: 99999;
+}
+
+.loading-logo {
+  font-family: 'Orbitron', sans-serif;
+  font-weight: 900;
+  font-size: 24px;
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: logoPulse 1.5s ease-in-out infinite alternate;
+  text-shadow: 0 0 10px rgba(255, 81, 0, 0.2);
+}
+
+@keyframes logoPulse {
+  from { transform: scale(0.97); opacity: 0.8; }
+  to { transform: scale(1.02); opacity: 1; }
+}
+
+.spinner {
+  width: 28px;
+  height: 28px;
+  border: 3px solid rgba(255,81,0,0.08);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.opacity-40 { opacity: 0.4; }
+.empty-state { text-align: center; padding: 25px 8px; color: var(--muted); }
+.empty-icon { font-size: 32px; margin-bottom: 6px; }
+</style>
+</head>
+<body>
+
+<!-- Fire Spark Particle Canvas -->
+<canvas id="fireCanvas"></canvas>
+
+<div class="loading-screen" id="loadingScreen">
+  <div class="loading-logo" id="loadingText">⚡ ELITE HUD ACTIVE</div>
+  <div class="spinner"></div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<div class="container" id="app" style="display:none">
+  <!-- Home Page -->
+  <div class="page active" id="page-home">
+    <div class="header">
+      <div class="logo">⚡ FF REWARDS <span>Elite</span></div>
+      <div class="header-controls">
+        <button class="mute-btn active" id="audioToggle" onclick="toggleMute()" title="Toggle Sound">🔊</button>
+        <div class="user-avatar" id="avatarInitial">?</div>
+      </div>
+    </div>
+    
+    <!-- Ranks progression HUD -->
+    <div class="rank-widget">
+      <div class="rank-header">
+        <div class="rank-details">
+          <div class="rank-badge" id="hudRankBadge">🥉</div>
+          <div class="rank-title">
+            <span id="hudRankSubText">Squad Standing</span>
+            <span id="hudRankName" style="font-size:14px; font-weight:900; color:#fff; font-family:'Orbitron'; text-transform:uppercase;">Bronze Tier</span>
+          </div>
+        </div>
+        <div class="rank-multiplier" id="hudRankMultiplier">1.0x Multiplier</div>
+      </div>
+      <div class="rank-progress-bar">
+        <div class="rank-progress-fill" id="hudRankProgress"></div>
+      </div>
+      <div class="rank-progress-text">
+        <span>Exp Progression</span>
+        <span><b id="hudRankPoints">0</b> / <b id="hudRankNextPoints">5,000</b> pts</span>
+      </div>
+    </div>
+    
+    <!-- Balance Card -->
+    <div class="balance-card">
+      <div class="balance-label">🎖️ Point Inventory</div>
+      <div class="balance-flex">
+        <div class="balance-points" id="balancePoints">0 <span>pts</span></div>
+        <div class="diamond-equivalent">
+          <img src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%2300f0ff'><path d='M12 2L2 9l10 13 10-13L12 2z'/></svg>" alt="diamonds"/>
+          <span id="balanceDiamonds">0</span> 💎
+        </div>
+      </div>
+      <div class="balance-stats">
+        <div class="stat-box"><div class="stat-val" id="todayPoints">0</div><div class="stat-lbl">Today Pts</div></div>
+        <div class="stat-box"><div class="stat-val" id="totalPoints">0</div><div class="stat-lbl">Total Pts</div></div>
+        <div class="stat-box"><div class="stat-val" id="referCount">0</div><div class="stat-lbl">Invited</div></div>
+      </div>
+    </div>
+
+    <!-- Official Tasks (Missions) -->
+    <div class="section-title"><span></span>Tactical Missions</div>
+    <div class="ads-grid" style="gap:8px; margin-bottom:20px;">
+      <div onclick="handleOfficialTask('group')" class="ad-card" style="cursor:pointer;">
+        <div class="ad-flex">
+          <div class="ad-icon">📢</div>
+          <div class="ad-info">
+            <div class="ad-title">Join Support Group</div>
+            <div id="status-group" class="ad-sub">Reward: <b id="reward-group">0</b> Pts</div>
+          </div>
+          <span style="font-size:18px; color:var(--accent2);">➔</span>
+        </div>
+      </div>
+      
+      <div onclick="handleOfficialTask('channel')" class="ad-card" style="cursor:pointer;">
+        <div class="ad-flex">
+          <div class="ad-icon">💬</div>
+          <div class="ad-info">
+            <div class="ad-title">Join Payment Channel</div>
+            <div id="status-channel" class="ad-sub">Reward: <b id="reward-channel">0</b> Pts</div>
+          </div>
+          <span style="font-size:18px; color:var(--accent2);">➔</span>
+        </div>
+      </div>
+
+      <div onclick="openTutorial()" class="ad-card" style="cursor:pointer;">
+        <div class="ad-flex">
+          <div class="ad-icon">🎬</div>
+          <div class="ad-info">
+            <div class="ad-title">Watch Video Tutorial</div>
+            <div class="ad-sub" style="color:var(--cyan); font-weight:700;">Complete Missions Guide</div>
+          </div>
+          <span style="font-size:18px; color:var(--cyan);">➔</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Generators (Ad slots) -->
+    <div class="section-title"><span></span>Tactical Point Generators</div>
+    <div class="gen-grid">
+      <!-- Slot 1 -->
+      <div onclick="showAdSlot(1)" id="slot1-card" class="gen-card">
+        <div class="gen-icon">🔥</div>
+        <div class="gen-title">Ember Generator</div>
+        <div id="slot1-reward-display" class="gen-reward">+0 Pts</div>
+        <div class="gen-count" id="slot1-count">Used: 0/10</div>
+      </div>
+      
+      <!-- Slot 2 -->
+      <div onclick="showAdSlot(2)" id="slot2-card" class="gen-card">
+        <div class="gen-icon">⚡</div>
+        <div class="gen-title">Plasma Generator</div>
+        <div id="slot2-reward-display" class="gen-reward">+0 Pts</div>
+        <div class="gen-count" id="slot2-count">Used: 0/10</div>
+      </div>
+    </div>
+    
+    <!-- Daily Tasks -->
+    <div class="section-title"><span></span>Daily Field Operations</div>
+    <div id="main-tasks">
+      <div class="empty-state">Loading operations...</div>
+    </div>
+  </div>
+
+  <!-- Lucky Spin Wheel Page -->
+  <div class="page" id="page-wheel">
+    <div class="header"><div class="logo">🎡 LUCKY SPIN <span>Game</span></div></div>
+    
+    <div class="ref-card" style="border-color: var(--cyan); background: rgba(0, 240, 255, 0.03); text-align: center; padding: 12px 10px; margin-bottom: 12px;">
+      <p style="font-size: 11px; text-transform: uppercase; color: var(--muted); font-family: 'Orbitron'; font-weight: 700; letter-spacing: 0.5px;">Watch Ad and Spin the Wheel</p>
+      <p style="font-size: 13px; color: var(--cyan); margin-top: 3px; font-weight: 600;">Land on points and claim direct inventory credits!</p>
+    </div>
+    
+    <div class="wheel-container">
+      <div class="wheel-wrapper">
+        <div class="wheel-pointer"></div>
+        <canvas id="wheelCanvas" class="wheel-canvas" width="500" height="500"></canvas>
+        <div class="wheel-center">🎯</div>
+      </div>
+      
+      <button class="btn-spin" id="spinBtn" onclick="spinWheel()">
+        <span>🎰 WATCH AD & SPIN</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Referral Page -->
+  <div class="page" id="page-refer">
+    <div class="header"><div class="logo">👥 RECRUITMENT</div></div>
+    
+    <div class="ad-card" style="background: rgba(255, 107, 0, 0.04); border: 1px solid var(--accent); margin-bottom: 16px;">
+      <div class="ad-flex">
+        <div class="ad-icon" style="background: rgba(255, 204, 0, 0.1); color: var(--accent2)">🎁</div>
+        <div>
+          <div style="font-size: 11px; color: var(--accent2); font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;">Recruitment Bounty</div>
+          <div style="font-size: 18px; font-family: 'Orbitron', sans-serif; font-weight: 900; color: #fff;" id="refRewardAmount">0 Pts</div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="ref-card">
+      <div class="section-title" style="margin-top:0;"><span></span>Squad Growth</div>
+      <div class="ref-progress">
+        <div class="ref-progress-flex">
+          <span style="font-size:12px; color:var(--muted); font-weight:700">Invited Recruits</span>
+          <span id="refProgressText" style="font-size:13px; font-weight:700; color:var(--accent2)">0 / 5</span>
+        </div>
+        <div class="ref-bar">
+          <div class="ref-fill" id="refFill" style="width:0%"></div>
+        </div>
+      </div>
+      <p style="font-size: 11px; color: var(--muted); margin-top: 10px; line-height: 1.5;">
+        Recruit <b id="reqReferText" style="color:var(--accent)">5 friends</b> to unlock the **Store Redemption** feature!
+      </p>
+    </div>
+    
+    <div class="ref-card">
+      <div class="section-title" style="margin-top:0;"><span></span>Recruitment Link</div>
+      <div class="ref-link-box">
+        <div class="ref-link-text" id="refLinkText">Loading link...</div>
+        <button class="btn-action" onclick="copyRefLink()">Copy</button>
+      </div>
+    </div>
+    
+    <div class="section-title"><span></span>Squad List</div>
+    <div id="refList">
+      <div class="empty-state">
+        <div class="empty-icon">👥</div>
+        <p>No recruits recorded</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Store / Withdraw Page -->
+  <div class="page" id="page-withdraw">
+    <div class="header"><div class="logo">🛒 REDEEM STORE</div></div>
+    
+    <div class="withdraw-locked-panel" id="withdrawLocked">
+      <div class="ref-card" style="border-color: var(--red); background: rgba(255,42,42,0.03);">
+        <div style="display:flex; align-items:center; gap:10px; margin-bottom:12px;">
+          <span style="font-size:20px; color:var(--red);">🔒</span>
+          <p style="font-size: 11px; font-weight: 700; color: var(--red); font-family: 'Orbitron', sans-serif; text-transform: uppercase;">Store Locked: Recruitment Required</p>
+        </div>
+        <div style="width:100%; background:rgba(0,0,0,0.5); height:6px; border-radius:999px; overflow:hidden; border: 1px solid rgba(255,255,255,0.05); margin-bottom:8px;">
+          <div id="refProgressBar" style="height:100%; background:linear-gradient(90deg, var(--red), var(--accent)); border-radius:999px; transition:width 0.5s; width:0%"></div>
+        </div>
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+          <span style="font-size:11px; color:var(--muted)">Recruit more friends to unlock redemptions</span>
+          <span id="refProgressTextWithdraw" style="font-size:12px; font-weight:700; color:var(--accent2)">0 / 5</span>
+        </div>
+      </div>
+    </div>
+    
+    <div class="withdraw-form-panel" id="withdrawForm">
+      <div class="section-title"><span></span>Select Diamond Bundle</div>
+      
+      <div class="redeem-grid">
+        <div onclick="selectRedeemOption(100, '100 Diamonds Topup')" class="redeem-item" id="opt-100">
+          <div class="redeem-icon"></div>
+          <div class="redeem-title">100 💎</div>
+          <div class="redeem-cost" id="cost-100">0 pts</div>
+        </div>
+        
+        <div onclick="selectRedeemOption(310, '310 Diamonds Topup')" class="redeem-item" id="opt-310">
+          <div class="redeem-icon" style="transform: scale(1.05);"></div>
+          <div class="redeem-title">310 💎</div>
+          <div class="redeem-cost" id="cost-310">0 pts</div>
+        </div>
+        
+        <div onclick="selectRedeemOption(520, '520 Diamonds Topup')" class="redeem-item" id="opt-520">
+          <div class="redeem-icon" style="transform: scale(1.1);"></div>
+          <div class="redeem-title">520 💎</div>
+          <div class="redeem-cost" id="cost-520">0 pts</div>
+        </div>
+
+        <div onclick="selectRedeemOption(1060, '1060 Diamonds Topup')" class="redeem-item" id="opt-1060">
+          <div class="redeem-icon" style="transform: scale(1.15);"></div>
+          <div class="redeem-title">1060 💎</div>
+          <div class="redeem-cost" id="cost-1060">0 pts</div>
+        </div>
+
+        <div onclick="selectRedeemOption(180, 'Weekly Membership')" class="redeem-item" id="opt-weekly">
+          <div class="redeem-icon membership"></div>
+          <div class="redeem-title">Weekly Pass</div>
+          <div class="redeem-cost gold" id="cost-weekly">0 pts</div>
+        </div>
+
+        <div onclick="selectRedeemOption(800, 'Monthly Membership')" class="redeem-item" id="opt-monthly">
+          <div class="redeem-icon membership" style="transform: scale(1.1);"></div>
+          <div class="redeem-title">Monthly Pass</div>
+          <div class="redeem-cost gold" id="cost-monthly">0 pts</div>
+        </div>
+      </div>
+      
+      <!-- Input Credentials Form -->
+      <div class="ref-card" style="margin-top: 15px;">
+        <div class="section-title" style="margin-top:0;"><span></span>Redemption Credentials</div>
+        
+        <div class="input-group">
+          <label class="input-label">Selected Item</label>
+          <input class="input-field" type="text" id="wdSelectedItem" value="None selected" style="border-color: var(--cyan); color: var(--cyan);" readonly />
+        </div>
+        
+        <div class="input-group">
+          <label class="input-label">Free Fire Player UID</label>
+          <input class="input-field" type="number" id="wdPlayerUid" placeholder="Enter Player ID (e.g. 293849201)"/>
+        </div>
+        
+        <div class="input-group">
+          <label class="input-label">In-Game Name (IGN)</label>
+          <input class="input-field" type="text" id="wdPlayerIgn" placeholder="Character Name (e.g. ALPHA_BOSS)"/>
+        </div>
+        
+        <button class="btn-redeem" onclick="submitRedeem()">Submit Order</button>
+      </div>
+    </div>
+    
+    <div class="section-title"><span></span>Redemption Logs</div>
+    <div class="history-list" id="historyList">
+      <div class="empty-state">
+        <div class="empty-icon">📋</div>
+        <p>No orders placed yet</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Profile Page -->
+  <div class="page" id="page-profile">
+    <div class="header"><div class="logo">👤 AGENT DOSSIER</div></div>
+    
+    <div class="profile-card" style="border-color:var(--accent2); background: linear-gradient(135deg, rgba(8,10,15,0.95) 0%, rgba(26,18,10,0.9) 100%);">
+      <!-- Profile Rank Banner -->
+      <div style="position: absolute; top: 12px; right: 12px; display: flex; align-items: center; gap: 4px; background: rgba(0,0,0,0.4); border: 1px solid var(--border); padding: 4px 8px; border-radius: 6px;">
+        <span id="profileRankBadge">🥉</span>
+        <span id="profileRankName" style="font-family:'Orbitron'; font-size:10px; font-weight:700; color:#fff;">BRONZE</span>
+      </div>
+
+      <div class="user-avatar" style="width: 58px; height: 58px; margin: 12px auto 14px; font-size: 24px; border-radius: 10px; transform: rotate(-2deg);" id="profileAvatar">?</div>
+      <div style="font-family:'Orbitron'; font-weight:900; font-size:18px; text-align:center; color:#fff;" id="profileName">Loading...</div>
+      <div style="font-size:11px; color:var(--muted); text-align:center; margin-top:2px; font-family:'Orbitron';" id="profileId">ID: ...</div>
+      
+      <div class="balance-stats" style="margin-top:20px; grid-template-columns: 1fr 1fr;">
+        <div class="stat-box" style="padding: 10px 8px;">
+          <div class="stat-val" style="color: #fff; font-size:14px;" id="pPoints">0 pts</div>
+          <div class="stat-lbl">Points Balance</div>
+        </div>
+        <div class="stat-box" style="padding: 10px 8px; border-color: var(--cyan);">
+          <div class="stat-val" style="color: var(--cyan); font-size:14px;" id="pDiamonds">0 💎</div>
+          <div class="stat-lbl">Equiv. Diamonds</div>
+        </div>
+        <div class="stat-box" style="padding: 10px 8px; margin-top: 8px;">
+          <div class="stat-val" style="color: var(--accent2); font-size:14px;" id="pRefers">0</div>
+          <div class="stat-lbl">Recruits</div>
+        </div>
+        <div class="stat-box" style="padding: 10px 8px; margin-top: 8px;">
+          <div class="stat-val" style="color: var(--green); font-size:14px;" id="pEarned">0 pts</div>
+          <div class="stat-lbl">Total Earned</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Nav Tab Bar -->
+<div class="bottom-nav">
+  <div class="nav-item active" onclick="showPage('home',this)"><div class="nav-icon">🏠</div><div class="nav-label">Home</div></div>
+  <div class="nav-item" onclick="showPage('wheel',this)"><div class="nav-icon">🎡</div><div class="nav-label">Spin</div></div>
+  <div class="nav-item" onclick="showPage('refer',this)"><div class="nav-icon">👥</div><div class="nav-label">Recruit</div></div>
+  <div class="nav-item" onclick="showPage('withdraw',this)"><div class="nav-icon">🛒</div><div class="nav-label">Store</div></div>
+  <div class="nav-item" onclick="showPage('profile',this)"><div class="nav-icon">👤</div><div class="nav-label">Profile</div></div>
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getDatabase, ref, get, set, update, push, increment, onValue } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+
+// Firebase credentials configured for tgffproject
+const firebaseConfig = {
+  apiKey: "AIzaSyA5KwrnhzpjHmPuMflXS9miJHSkE0LDzzg",
+  authDomain: "tgffproject.firebaseapp.com",
+  databaseURL: "https://tgffproject-default-rtdb.firebaseio.com",
+  projectId: "tgffproject",
+  storageBucket: "tgffproject.firebasestorage.app",
+  messagingSenderId: "324737301376",
+  appId: "1:324737301376:web:331cc92df3b28c19315f65",
+  measurementId: "G-P0N0N7W33V"
+};
+
+let firebaseApp, db;
+try {
+  firebaseApp = initializeApp(firebaseConfig);
+  db = getDatabase(firebaseApp);
+} catch (err) {
+  console.error("Firebase Initialization Failure:", err);
+}
+
+const tg = window.Telegram?.WebApp;
+tg?.expand(); tg?.ready();
+
+let currentUser = null;
+let userData = null;
+let adsLinks = [];
+let audioMuted = localStorage.getItem('audio_muted') === 'true';
+
+let globalSettings = { 
+  pointsPerDiamond: 100,
+  earnPerAd: 50, 
+  earnPerRefer: 500, 
+  minReferForWithdraw: 5, 
+  minWithdrawPoints: 10000, 
+  maxDailyAds: 200,
+  earnPerTask: 500,
+  earnPerSlot1: 300,
+  earnPerSlot2: 300,
+  earnPerOfficial: 500,
+  groupUrl: "https://t.me/your_ff_group",
+  channelUrl: "https://t.me/your_ff_channel",
+  tutorialUrl: "https://t.me/your_ff_tutorial",
+  monetagZone1: "10901138",
+  monetagZone2: "10901139"
+};
+
+let selectedDiamonds = 0;
+let selectedMethod = "";
+let isWatchingAd = false; 
+
+const BOT_USERNAME = 'free_fireINCOME_BOT'; 
+const APP_SHORT_NAME = 'app';
+
+// 1. Particle Sparks Background Animation
+function initSparksAnimation() {
+  const canvas = document.getElementById('fireCanvas');
+  const ctx = canvas.getContext('2d');
+  
+  function resizeCanvas() {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+  }
+  resizeCanvas();
+  window.addEventListener('resize', resizeCanvas);
+  
+  const particles = [];
+  const maxParticles = 40;
+  
+  class Spark {
+    constructor() {
+      this.reset();
+    }
+    reset() {
+      this.x = Math.random() * canvas.width;
+      this.y = canvas.height + Math.random() * 50;
+      this.size = 1 + Math.random() * 2.5;
+      this.speedY = 0.5 + Math.random() * 1.2;
+      this.speedX = -0.4 + Math.random() * 0.8;
+      this.alpha = 0.1 + Math.random() * 0.7;
+      this.fade = 0.003 + Math.random() * 0.005;
+      // Orange/Gold sparks
+      this.color = Math.random() > 0.4 ? 'rgba(255, 81, 0,' : 'rgba(255, 204, 0,';
+    }
+    update() {
+      this.y -= this.speedY;
+      this.x += this.speedX;
+      this.alpha -= this.fade;
+      if (this.alpha <= 0 || this.y < 0) {
+        this.reset();
+      }
+    }
+    draw() {
+      ctx.save();
+      ctx.shadowBlur = this.size * 3;
+      ctx.shadowColor = this.color.includes('81') ? '#ff5100' : '#ffcc00';
+      ctx.fillStyle = this.color + this.alpha + ')';
+      ctx.beginPath();
+      ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.restore();
+    }
+  }
+  
+  for(let i = 0; i < maxParticles; i++) {
+    particles.push(new Spark());
+  }
+  
+  function animate() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    particles.forEach(p => {
+      p.update();
+      p.draw();
+    });
+    requestAnimationFrame(animate);
+  }
+  animate();
+}
+
+// 2. Audio Synthesizer Wrapper using Web Audio API
+const synth = {
+  ctx: null,
+  init() {
+    if (!this.ctx) {
+      this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+    }
+    if (this.ctx.state === 'suspended') {
+      this.ctx.resume();
+    }
+  },
+  playTone(freq, duration, type = 'sine', gainVal = 0.1) {
+    if (audioMuted) return;
+    try {
+      this.init();
+      const osc = this.ctx.createOscillator();
+      const gain = this.ctx.createGain();
+      
+      osc.type = type;
+      osc.frequency.setValueAtTime(freq, this.ctx.currentTime);
+      
+      gain.gain.setValueAtTime(gainVal, this.ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.0001, this.ctx.currentTime + duration);
+      
+      osc.connect(gain);
+      gain.connect(this.ctx.destination);
+      
+      osc.start();
+      osc.stop(this.ctx.currentTime + duration);
+    } catch(e) {
+      console.warn("Audio Context init blocked:", e);
+    }
+  },
+  playClick() {
+    this.playTone(880, 0.08, 'sine', 0.15);
+  },
+  playTick() {
+    this.playTone(1200, 0.03, 'sine', 0.08);
+  },
+  playSweep() {
+    if (audioMuted) return;
+    try {
+      this.init();
+      const osc = this.ctx.createOscillator();
+      const gain = this.ctx.createGain();
+      
+      osc.type = 'triangle';
+      osc.frequency.setValueAtTime(100, this.ctx.currentTime);
+      osc.frequency.exponentialRampToValueAtTime(1500, this.ctx.currentTime + 1.2);
+      
+      gain.gain.setValueAtTime(0.12, this.ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.0001, this.ctx.currentTime + 1.2);
+      
+      osc.connect(gain);
+      gain.connect(this.ctx.destination);
+      
+      osc.start();
+      osc.stop(this.ctx.currentTime + 1.2);
+    } catch(e){}
+  },
+  playWin() {
+    if (audioMuted) return;
+    try {
+      this.init();
+      const now = this.ctx.currentTime;
+      // Arpeggio
+      const notes = [523.25, 659.25, 783.99, 1046.50]; // C5, E5, G5, C6
+      notes.forEach((note, index) => {
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(note, now + index * 0.12);
+        gain.gain.setValueAtTime(0.12, now + index * 0.12);
+        gain.gain.exponentialRampToValueAtTime(0.0001, now + index * 0.12 + 0.6);
+        
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start(now + index * 0.12);
+        osc.stop(now + index * 0.12 + 0.6);
+      });
+    } catch(e){}
+  }
+};
+
+window.toggleMute = function() {
+  audioMuted = !audioMuted;
+  localStorage.setItem('audio_muted', audioMuted);
+  const btn = document.getElementById('audioToggle');
+  if (audioMuted) {
+    btn.textContent = '🔇';
+    btn.classList.remove('active');
+  } else {
+    btn.textContent = '🔊';
+    btn.classList.add('active');
+    synth.playClick();
+  }
+};
+
+// 3. Ranks System calculations
+function calculateRank(totalPoints) {
+  // Configured boundaries matching implementation plan
+  if (totalPoints >= 150000) return { name: "Heroic", badge: "🏆", multiplier: 1.25, min: 150000, max: 9999999, class: "heroic" };
+  if (totalPoints >= 75000)  return { name: "Diamond", badge: "💎", multiplier: 1.20, min: 75000,  max: 150000,  class: "diamond" };
+  if (totalPoints >= 35000)  return { name: "Platinum", badge: "🛡️", multiplier: 1.15, min: 35000,  max: 75000,   class: "platinum" };
+  if (totalPoints >= 15000)  return { name: "Gold", badge: "🥇", multiplier: 1.10, min: 15000,  max: 35000,   class: "gold" };
+  if (totalPoints >= 5000)   return { name: "Silver", badge: "🥈", multiplier: 1.05, min: 5000,   max: 15000,   class: "silver" };
+  return { name: "Bronze", badge: "🥉", multiplier: 1.00, min: 0,      max: 5000,    class: "bronze" };
+}
+
+// 4. Lucky Spin Wheel Render and Logic
+const wheel = {
+  canvas: null,
+  ctx: null,
+  slices: [
+    { text: "50 Pts", color: "#161824", value: 50 },
+    { text: "150 Pts", color: "#222536", value: 150 },
+    { text: "Try Again", color: "#b31c1c", value: 0 },
+    { text: "250 Pts", color: "#161824", value: 250 },
+    { text: "100 Pts", color: "#222536", value: 100 },
+    { text: "300 Pts", color: "#161824", value: 300 },
+    { text: "Jackpot", color: "#ffcc00", textColor: "#000", value: 1000 },
+    { text: "500 Pts", color: "#ff5100", textColor: "#fff", value: 500 }
+  ],
+  isRotating: false,
+  startAngle: 0,
+  
+  draw() {
+    this.canvas = document.getElementById('wheelCanvas');
+    if (!this.canvas) return;
+    this.ctx = this.canvas.getContext('2d');
+    
+    const w = this.canvas.width;
+    const h = this.canvas.height;
+    const r = w / 2;
+    const sliceAngle = (Math.PI * 2) / this.slices.length;
+    
+    this.ctx.clearRect(0,0,w,h);
+    
+    this.slices.forEach((slice, i) => {
+      const angle = this.startAngle + i * sliceAngle;
+      
+      this.ctx.fillStyle = slice.color;
+      this.ctx.beginPath();
+      this.ctx.moveTo(r, r);
+      this.ctx.arc(r, r, r - 10, angle, angle + sliceAngle);
+      this.ctx.lineTo(r, r);
+      this.ctx.fill();
+      
+      // Draw border separator
+      this.ctx.strokeStyle = "rgba(255, 81, 0, 0.4)";
+      this.ctx.lineWidth = 2;
+      this.ctx.stroke();
+      
+      // Draw slice text
+      this.ctx.save();
+      this.ctx.translate(r, r);
+      this.ctx.rotate(angle + sliceAngle / 2);
+      this.ctx.textAlign = "right";
+      this.ctx.fillStyle = slice.textColor || "#fff";
+      this.ctx.font = "bold 26px Orbitron";
+      this.ctx.fillText(slice.text, r - 30, 10);
+      this.ctx.restore();
+    });
+  }
+};
+
+window.spinWheel = async function() {
+  if (wheel.isRotating || isWatchingAd) return;
+  
+  // Set ad watchdog lock
+  isWatchingAd = true;
+  document.getElementById('spinBtn').disabled = true;
+  
+  const zoneId = globalSettings.monetagZone1 || "10901138";
+  const funcName = `show_${zoneId}`;
+  
+  // Update timestamp in Firebase to secure countdown rules
+  const startTimestamp = Date.now();
+  await update(ref(db, `users/${userData.id}`), { lastAdClickTime: startTimestamp });
+  
+  if (zoneId && typeof window[funcName] === 'function') {
+    window[funcName]().then(() => {
+      showToast("Ad viewed! Launching spin sequences...");
+      synth.playSweep();
+      
+      // Trigger Spin
+      wheel.isRotating = true;
+      const targetDuration = 4000; // 4s
+      const rotations = 8 + Math.floor(Math.random() * 5); // Random spin cycles
+      const selectedIndex = Math.floor(Math.random() * wheel.slices.length);
+      
+      const sliceAngle = (Math.PI * 2) / wheel.slices.length;
+      
+      // Calculate stopping angle
+      const currentRotateDeg = (rotations * 360) + (360 - (selectedIndex * (360 / wheel.slices.length)));
+      const wheelEl = document.getElementById('wheelCanvas');
+      
+      wheelEl.style.transform = `rotate(${currentRotateDeg}deg)`;
+      
+      // Mechanical tick sounds simulation
+      let tickCount = 0;
+      const tickTimer = setInterval(() => {
+        tickCount++;
+        synth.playTick();
+        if (tickCount > 35) clearInterval(tickTimer);
+      }, 100);
+      
+      setTimeout(async () => {
+        try {
+          // Double verify server timestamp to block hacks
+          const userRef = ref(db, `users/${userData.id}`), snap = await get(userRef), user = snap.val();
+          if (Date.now() - user.lastAdClickTime < 3800) {
+            showToast("Cheating detected: Timer bypassed!", true);
+            wheel.isRotating = false;
+            isWatchingAd = false;
+            document.getElementById('spinBtn').disabled = false;
+            return;
+          }
+          
+          const result = wheel.slices[selectedIndex];
+          const rank = calculateRank(user.totalPointsEarned || 0);
+          
+          // Apply multiplier to award points
+          const baseEarnVal = result.value;
+          const finalEarned = Math.floor(baseEarnVal * rank.multiplier);
+          
+          if (finalEarned > 0) {
+            await update(userRef, {
+              points: increment(finalEarned),
+              totalPointsEarned: increment(finalEarned),
+              todayPoints: increment(finalEarned)
+            });
+            synth.playWin();
+            showToast(`Won: +${finalEarned} Points! (x${rank.multiplier} Multiplier)`);
+          } else {
+            showToast("Better luck next time!", true);
+          }
+          
+          if (tg && typeof tg.HapticFeedback !== 'undefined') {
+            try { tg.HapticFeedback.notificationOccurred('success'); } catch(e){}
+          }
+          
+        } catch (err) {
+          showToast("Redemption synchronization failure", true);
+        } finally {
+          wheel.isRotating = false;
+          isWatchingAd = false;
+          document.getElementById('spinBtn').disabled = false;
+          wheelEl.style.transition = 'none';
+          wheelEl.style.transform = 'rotate(0deg)';
+          setTimeout(() => {
+            wheelEl.style.transition = 'transform 4s cubic-bezier(0.1, 0.8, 0.1, 1)';
+          }, 50);
+        }
+      }, targetDuration);
+      
+    }).catch(err => {
+      showToast("Generator failed to connect", true);
+      isWatchingAd = false;
+      document.getElementById('spinBtn').disabled = false;
+    });
+  } else {
+    showToast("SDK loading, please wait...", true);
+    isWatchingAd = false;
+    document.getElementById('spinBtn').disabled = false;
+  }
+};
+
+// 5. Cooldown persistence mechanisms (LocalStorage)
+function saveCooldownTimer(slotId, durationSec) {
+  const endTime = Date.now() + durationSec * 1000;
+  localStorage.setItem(`cooldown_end_slot_${slotId}`, endTime);
+}
+
+function getCooldownTimeRemaining(slotId) {
+  const endTime = localStorage.getItem(`cooldown_end_slot_${slotId}`);
+  if (!endTime) return 0;
+  const diff = Math.ceil((endTime - Date.now()) / 1000);
+  return diff > 0 ? diff : 0;
+}
+
+function restoreAllActiveCooldowns() {
+  for (let slotId = 1; slotId <= 2; slotId++) {
+    const remaining = getCooldownTimeRemaining(slotId);
+    if (remaining > 0) {
+      applyCooldownUI(slotId, remaining);
+    }
+  }
+}
+
+function applyCooldownUI(slotId, secLeft) {
+  isWatchingAd = true;
+  const card = document.getElementById(`slot${slotId}-card`);
+  card.classList.add('active-ad');
+  
+  const display = document.getElementById(`slot${slotId}-reward-display`);
+  const rewardVal = slotId === 1 ? (globalSettings.earnPerSlot1 || 300) : (globalSettings.earnPerSlot2 || 300);
+  
+  display.textContent = `${secLeft}s LOCK`;
+  display.style.color = 'var(--red)';
+  
+  const countdown = setInterval(() => {
+    secLeft--;
+    display.textContent = `${secLeft}s LOCK`;
+    if (secLeft <= 0) {
+      clearInterval(countdown);
+      display.textContent = `+${rewardVal} Pts`;
+      display.style.color = 'var(--accent2)';
+      card.classList.remove('active-ad');
+      isWatchingAd = false;
+    }
+  }, 1000);
+}
+
+function loadMonetagSDKs(zoneId1, zoneId2) {
+  if (zoneId1) {
+    const existing1 = document.getElementById('monetag-sdk-1');
+    if (existing1) existing1.remove();
+    const script1 = document.createElement('script');
+    script1.id = 'monetag-sdk-1';
+    script1.src = '//libtl.com/sdk.js';
+    script1.dataset.zone = zoneId1;
+    script1.dataset.sdk = `show_${zoneId1}`;
+    document.head.appendChild(script1);
+  }
+  
+  if (zoneId2) {
+    const existing2 = document.getElementById('monetag-sdk-2');
+    if (existing2) existing2.remove();
+    const script2 = document.createElement('script');
+    script2.id = 'monetag-sdk-2';
+    script2.src = '//libtl.com/sdk.js';
+    script2.dataset.zone = zoneId2;
+    script2.dataset.sdk = `show_${zoneId2}`;
+    document.head.appendChild(script2);
+  }
+}
+
+// Load and Initialize App
+async function loadMonetagZoneScripts() {
+  loadMonetagSDKs(globalSettings.monetagZone1, globalSettings.monetagZone2);
+}
+
+async function init() {
+  // Setup Canvas Sparks Animation immediately so it runs during load/connection phases
+  try {
+    initSparksAnimation();
+  } catch (canvasErr) {
+    console.warn("Sparks animation canvas init failed:", canvasErr);
+  }
+
+  try {
+    if (tg?.initDataUnsafe?.user) currentUser = tg.initDataUnsafe.user;
+    else {
+      let testId = localStorage.getItem('test_id') || "TEST_" + Math.floor(Math.random() * 9000000);
+      localStorage.setItem('test_id', testId);
+      currentUser = { id: testId, first_name: 'Elite', last_name: 'User', username: 'elite_user' };
+    }
+
+    // Load Settings
+    try {
+      const setSnap = await get(ref(db, 'settings'));
+      if(setSnap.exists()) {
+        globalSettings = { ...globalSettings, ...setSnap.val() };
+      }
+      
+      onValue(ref(db, 'settings'), (snapshot) => {
+        if(snapshot.exists()) {
+          globalSettings = { ...globalSettings, ...snapshot.val() };
+          if(userData) updateUI();
+        }
+      });
+    } catch (err) {
+      console.warn("Could not load settings from DB:", err);
+    }
+    
+    await loadMonetagZoneScripts();
+    
+    // Draw canvas spin wheel
+    wheel.draw();
+
+    let startParam = tg?.initDataUnsafe?.start_param || new URLSearchParams(window.location.search).get('tgWebAppStartParam') || new URLSearchParams(window.location.search).get('startapp');
+    
+    try {
+      await loadOrCreateUser(startParam);
+    } catch (err) {
+      console.error("Could not load/create user node:", err);
+      showToast("Database connection warning", true);
+    }
+
+    if (userData && userData.id) {
+      onValue(ref(db, `users/${userData.id}`), async (snapshot) => {
+        if (snapshot.exists()) {
+          userData = snapshot.val();
+          updateUI();
+        }
+      });
+    }
+
+    try {
+      await loadAds();
+    } catch (err) {
+      console.warn("Could not load ad list:", err);
+    }
+    
+    updateUI();
+    
+    // Restore persistent local storage timers
+    restoreAllActiveCooldowns();
+  } catch (globalErr) {
+    console.error("Global Initialization Failure:", globalErr);
+    showToast("Application loading failed!", true);
+  } finally {
+    document.getElementById('loadingScreen').style.display = 'none';
+    document.getElementById('app').style.display = 'block';
+  }
+}
+
+async function loadOrCreateUser(refCode) {
+  const userId = String(currentUser.id);
+  const userRef = ref(db, `users/${userId}`);
+  const snap = await get(userRef);
+  const todayStr = new Date().toISOString().slice(0,10);
+  const today = new Date().toDateString();
+  
+  if (!snap.exists()) {
+    userData = { 
+      id: userId, 
+      name: (currentUser.first_name || '') + ' ' + (currentUser.last_name || ''), 
+      username: currentUser.username || 'no_username',
+      playerUid: "",
+      ign: "",
+      points: 0, 
+      totalPointsEarned: 0, 
+      todayPoints: 0, 
+      todayDate: todayStr, 
+      referCount: 0, 
+      joinedAt: Date.now(), 
+      withdrawLocked: true,
+      ad1Count: 0,
+      ad2Count: 0,
+      lastAdClickTime: 0,
+      tasksDone: [],
+      officialTasks: [],
+      lastDate: today
+    };
+    await set(userRef, userData);
+    
+    // Process referral
+    if (refCode && refCode !== userId && refCode !== 'claim') {
+      const refSnap = await get(ref(db, `users/${refCode}`));
+      if (refSnap.exists()) {
+        const rData = refSnap.val(), newCount = (rData.referCount || 0) + 1;
+        const reward = globalSettings.earnPerRefer || 500;
+        const updates = { 
+          referCount: newCount, 
+          points: (rData.points || 0) + reward, 
+          totalPointsEarned: (rData.totalPointsEarned || 0) + reward 
+        };
+        if (newCount >= globalSettings.minReferForWithdraw) updates.withdrawLocked = false;
+        await update(ref(db, `users/${refCode}`), updates);
+        await push(ref(db, `referrals/${refCode}`), { userId, name: userData.name, joinedAt: Date.now() });
+      }
+    }
+  } else {
+    userData = snap.val();
+    if (userData.lastDate !== today) { 
+      await update(userRef, { 
+        todayPoints: 0, 
+        todayDate: todayStr, 
+        ad1Count: 0,
+        ad2Count: 0,
+        tasksDone: [],
+        lastDate: today
+      }); 
+      userData.todayPoints = 0; 
+      userData.todayDate = todayStr; 
+      userData.ad1Count = 0;
+      userData.ad2Count = 0;
+      userData.tasksDone = [];
+      userData.lastDate = today;
+    }
+  }
+}
+
+// 📢 Official Task Handling
+window.handleOfficialTask = async function(taskKey) {
+  if (!userData) return;
+  const officialTasks = userData.officialTasks || [];
+  if (officialTasks.includes(taskKey)) return;
+  
+  synth.playClick();
+  
+  let taskUrl = '';
+  if (taskKey === 'group') {
+    taskUrl = globalSettings.groupUrl || 'https://t.me/your_ff_group';
+  } else if (taskKey === 'channel') {
+    taskUrl = globalSettings.channelUrl || 'https://t.me/your_ff_channel';
+  }
+  
+  let formattedUrl = taskUrl.trim();
+  if (formattedUrl.startsWith('@')) {
+    formattedUrl = 'https://t.me/' + formattedUrl.substring(1);
+  } else if (!formattedUrl.startsWith('http://') && !formattedUrl.startsWith('https://')) {
+    formattedUrl = 'https://' + formattedUrl;
+  }
+  
+  if (tg && typeof tg.openTelegramLink === 'function' && (formattedUrl.includes('t.me') || formattedUrl.includes('telegram.me'))) {
+    tg.openTelegramLink(formattedUrl);
+  } else if (tg && typeof tg.openLink === 'function') {
+    tg.openLink(formattedUrl);
+  } else {
+    window.open(formattedUrl, '_blank');
+  }
+  
+  showToast("Verifying join status... Wait 4s.");
+  setTimeout(async () => {
+    try {
+      const userRef = ref(db, `users/${userData.id}`), snap = await get(userRef), user = snap.val();
+      const currentTasks = user.officialTasks || [];
+      if (!currentTasks.includes(taskKey)) {
+        const reward = globalSettings.earnPerOfficial || 500;
+        const rank = calculateRank(user.totalPointsEarned || 0);
+        // Multiplied points reward
+        const finalReward = Math.floor(reward * rank.multiplier);
+        
+        const newPoints = (user.points || 0) + finalReward;
+        await update(userRef, {
+          points: newPoints,
+          totalPointsEarned: (user.totalPointsEarned || 0) + finalReward,
+          officialTasks: [...currentTasks, taskKey]
+        });
+        synth.playWin();
+        showToast(`${finalReward} points claimed! (Rank Mult: x${rank.multiplier})`);
+      }
+    } catch (err) {
+      showToast("Verification failed", true);
+    }
+  }, 4000);
+};
+
+window.openTutorial = function() {
+  synth.playClick();
+  let url = globalSettings.tutorialUrl || 'https://t.me/your_ff_tutorial';
+  let formattedUrl = url.trim();
+  if (formattedUrl.startsWith('@')) {
+    formattedUrl = 'https://t.me/' + formattedUrl.substring(1);
+  } else if (!formattedUrl.startsWith('http://') && !formattedUrl.startsWith('https://')) {
+    formattedUrl = 'https://' + formattedUrl;
+  }
+  
+  if (tg && typeof tg.openTelegramLink === 'function' && (formattedUrl.includes('t.me') || formattedUrl.includes('telegram.me'))) {
+    tg.openTelegramLink(formattedUrl);
+  } else if (tg && typeof tg.openLink === 'function') {
+    tg.openLink(formattedUrl);
+  } else {
+    window.open(formattedUrl, '_blank');
+  }
+};
+
+// ⚡ Dynamic Cooldown Generators
+window.showAdSlot = async function(slotId) {
+  if (!userData || isWatchingAd) return;
+  
+  const remaining = getCooldownTimeRemaining(slotId);
+  if (remaining > 0) return showToast(`Generator is locked for ${remaining}s!`, true);
+  
+  const today = new Date().toDateString();
+  const countKey = `ad${slotId}Count`;
+  const count = userData.lastDate === today ? (userData[countKey] || 0) : 0;
+  
+  if (count >= 10) return showToast("Daily limit reached for this generator!", true);
+  
+  isWatchingAd = true;
+  synth.playSweep();
+  const card = document.getElementById(`slot${slotId}-card`);
+  card.classList.add('active-ad');
+  
+  const zoneId = slotId === 1 ? globalSettings.monetagZone1 : globalSettings.monetagZone2;
+  const reward = slotId === 1 ? (globalSettings.earnPerSlot1 || 300) : (globalSettings.earnPerSlot2 || 300);
+  const funcName = `show_${zoneId}`;
+  
+  const startTimestamp = Date.now();
+  await update(ref(db, `users/${userData.id}`), { lastAdClickTime: startTimestamp });
+  
+  // Persist timer end in local storage to prevent refreshes
+  saveCooldownTimer(slotId, 15);
+  
+  if (zoneId && typeof window[funcName] === 'function') {
+    window[funcName]().then(() => {
+      showToast("Ad viewed! Processing points in 15s...");
+      
+      let secLeft = 15;
+      const display = document.getElementById(`slot${slotId}-reward-display`);
+      display.textContent = `${secLeft}s LOCK`;
+      display.style.color = 'var(--red)';
+      
+      const countdown = setInterval(() => {
+        secLeft--;
+        display.textContent = `${secLeft}s LOCK`;
+        if (secLeft <= 0) {
+          clearInterval(countdown);
+          display.textContent = `+${reward} Pts`;
+          display.style.color = 'var(--accent2)';
+        }
+      }, 1000);
+      
+      setTimeout(async () => {
+        try {
+          const userRef = ref(db, `users/${userData.id}`), snap = await get(userRef), user = snap.val();
+          
+          if (Date.now() - user.lastAdClickTime < 14500) {
+            showToast("Generator error: Timer bypassed!", true);
+            isWatchingAd = false;
+            card.classList.remove('active-ad');
+            return;
+          }
+          
+          const rank = calculateRank(user.totalPointsEarned || 0);
+          const finalReward = Math.floor(reward * rank.multiplier);
+          
+          const curCount = user.lastDate === today ? (user[countKey] || 0) : 0;
+          const newPoints = (user.points || 0) + finalReward;
+          
+          const updates = {
+            points: newPoints,
+            totalPointsEarned: (user.totalPointsEarned || 0) + finalReward,
+            todayPoints: (user.todayPoints || 0) + finalReward,
+            lastDate: today
+          };
+          updates[countKey] = curCount + 1;
+          
+          await update(userRef, updates);
+          synth.playWin();
+          showToast(`+${finalReward} points added! (Rank Mult: x${rank.multiplier})`);
+          
+          if (tg && typeof tg.HapticFeedback !== 'undefined') {
+            try { tg.HapticFeedback.notificationOccurred('success'); } catch(e){}
+          }
+        } catch (err) {
+          showToast("Generator synchronization failure", true);
+        } finally {
+          isWatchingAd = false;
+          card.classList.remove('active-ad');
+        }
+      }, 15000);
+    }).catch(err => {
+      console.error("Monetag display error:", err);
+      showToast("Generator failed to connect. Try again.", true);
+      isWatchingAd = false;
+      card.classList.remove('active-ad');
+    });
+  } else {
+    showToast("SDK loading, please wait...", true);
+    isWatchingAd = false;
+    card.classList.remove('active-ad');
+  }
+};
+
+// 📺 Daily Ad Operations
+window.handleTask = async function(id) {
+  if (!userData || isWatchingAd) return;
+  const today = new Date().toDateString();
+  const doneTasks = userData.lastDate === today ? (userData.tasksDone || []) : [];
+  
+  if (doneTasks.includes(id)) return showToast("Operation already completed!", true);
+  if (!adsLinks.length) return showToast("No operations available!", true);
+  
+  isWatchingAd = true;
+  synth.playClick();
+  
+  const adIndex = (id - 1) % adsLinks.length;
+  const adUrl = adsLinks[adIndex].url || adsLinks[adIndex].link;
+  
+  let formattedAdUrl = adUrl.trim();
+  if (!formattedAdUrl.startsWith('http://') && !formattedAdUrl.startsWith('https://')) {
+    formattedAdUrl = 'https://' + formattedAdUrl;
+  }
+  
+  const targetUrl = formattedAdUrl.includes('?') ? `${formattedAdUrl}&uid=${userData.id}` : `${formattedAdUrl}?uid=${userData.id}`;
+  
+  // Set database timestamp
+  const startTimestamp = Date.now();
+  await update(ref(db, `users/${userData.id}`), { lastAdClickTime: startTimestamp });
+  
+  if (tg && typeof tg.openLink === 'function') {
+    tg.openLink(targetUrl);
+  } else {
+    window.open(targetUrl, '_blank');
+  }
+  
+  const btn = document.getElementById(`task-btn-${id}`);
+  btn.disabled = true;
+  btn.style.background = 'rgba(255, 255, 255, 0.05)';
+  btn.style.color = 'var(--muted)';
+  
+  let timeRemaining = 15;
+  btn.textContent = `${timeRemaining}s`;
+  
+  const timer = setInterval(() => {
+    timeRemaining--;
+    btn.textContent = `${timeRemaining}s`;
+    if (timeRemaining <= 0) {
+      clearInterval(timer);
+      btn.textContent = 'Completed';
+    }
+  }, 1000);
+  
+  setTimeout(async () => {
+    try {
+      const userRef = ref(db, `users/${userData.id}`), snap = await get(userRef), user = snap.val();
+      
+      if (Date.now() - user.lastAdClickTime < 14500) {
+        showToast("Operation rejected: Timer bypassed!", true);
+        isWatchingAd = false;
+        btn.disabled = false;
+        btn.textContent = 'Deploy';
+        return;
+      }
+      
+      let curTasks = user.lastDate === today ? (user.tasksDone || []) : [];
+      if (!curTasks.includes(id)) {
+        const newTasks = [...curTasks, id];
+        const reward = globalSettings.earnPerTask || 500;
+        const rank = calculateRank(user.totalPointsEarned || 0);
+        
+        const finalReward = Math.floor(reward * rank.multiplier);
+        const newPoints = (user.points || 0) + finalReward;
+        
+        await update(userRef, {
+          points: newPoints,
+          totalPointsEarned: (user.totalPointsEarned || 0) + finalReward,
+          todayPoints: (user.todayPoints || 0) + finalReward,
+          tasksDone: newTasks,
+          lastDate: today
+        });
+        
+        synth.playWin();
+        showToast(`Operation success: +${finalReward} Pts! (x${rank.multiplier} Multiplier)`);
+        
+        if (tg && typeof tg.HapticFeedback !== 'undefined') {
+          try { tg.HapticFeedback.notificationOccurred('success'); } catch(e){}
+        }
+      }
+    } catch (err) {
+      showToast("Error recording reward", true);
+    } finally {
+      isWatchingAd = false;
+    }
+  }, 15000);
+};
+
+function renderTasks() {
+  const container = document.getElementById('main-tasks');
+  if (!userData) return;
+  const today = new Date().toDateString();
+  const doneTasks = userData.lastDate === today ? (userData.tasksDone || []) : [];
+  
+  if (!adsLinks.length) {
+    container.innerHTML = `
+      <div class="empty-state">
+        <div class="empty-icon">📺</div>
+        <p>No Operations active in this sector</p>
+      </div>
+    `;
+    return;
+  }
+  
+  let html = '';
+  adsLinks.forEach((ad, index) => {
+    const taskId = index + 1;
+    const isDone = doneTasks.includes(taskId);
+    const reward = globalSettings.earnPerTask || 500;
+    const title = ad.title || `Operation Drop ${taskId}`;
+    
+    html += `
+      <div class="ad-card ${isDone ? 'opacity-40' : ''}">
+        <div class="ad-flex">
+          <div class="ad-icon">📺</div>
+          <div class="ad-info">
+            <div class="ad-title">${title}</div>
+            <div class="ad-sub">Earn: <b>${reward}</b> Pts</div>
+          </div>
+          <button id="task-btn-${taskId}" onclick="${isDone ? '' : `handleTask(${taskId})`}" 
+            class="btn-action" 
+            style="${isDone ? 'background:rgba(255,255,255,0.05); color:var(--muted); pointer-events:none;' : ''}">
+            ${isDone ? 'USED' : 'DEPLOY'}
+          </button>
+        </div>
+      </div>
+    `;
+  });
+  container.innerHTML = html;
+}
+
+async function loadAds() { 
+  const snap = await get(ref(db, 'ads')); 
+  if (snap.exists()) adsLinks = Object.values(snap.val()).filter(a => a.active !== false); 
+}
+
+function updateUI() {
+  if (!userData) return;
+  const ptsPerDiamond = globalSettings.pointsPerDiamond || 100;
+  
+  // Calculate Rank Details
+  const totalEarnedPoints = userData.totalPointsEarned || 0;
+  const rank = calculateRank(totalEarnedPoints);
+  
+  // Update Rank Widget
+  document.getElementById('hudRankBadge').textContent = document.getElementById('profileRankBadge').textContent = rank.badge;
+  document.getElementById('hudRankName').textContent = `${rank.name} Tier`;
+  document.getElementById('profileRankName').textContent = rank.name;
+  document.getElementById('hudRankMultiplier').textContent = `x${rank.multiplier.toFixed(2)} Mult`;
+  
+  // Rank progress calculation
+  const totalInRank = rank.max - rank.min;
+  const pointsEarnedInRank = totalEarnedPoints - rank.min;
+  const percent = Math.min(100, Math.floor((pointsEarnedInRank / totalInRank) * 100));
+  
+  document.getElementById('hudRankProgress').style.width = percent + '%';
+  document.getElementById('hudRankPoints').textContent = totalEarnedPoints.toLocaleString();
+  document.getElementById('hudRankNextPoints').textContent = rank.max >= 999999 ? 'MAX' : rank.max.toLocaleString();
+  
+  // Update referral labels
+  document.getElementById('refRewardAmount').textContent = `${globalSettings.earnPerRefer} Pts`;
+  document.getElementById('reqReferText').textContent = `${globalSettings.minReferForWithdraw} Recruits`;
+  
+  // Calculation details in tasks
+  document.getElementById('reward-group').textContent = globalSettings.earnPerOfficial || 500;
+  document.getElementById('reward-channel').textContent = globalSettings.earnPerOfficial || 500;
+  
+  document.getElementById('slot1-reward-display').textContent = `+${globalSettings.earnPerSlot1 || 300} Pts`;
+  document.getElementById('slot2-reward-display').textContent = `+${globalSettings.earnPerSlot2 || 300} Pts`;
+  
+  // Point values in store
+  const opts = [100, 310, 520, 1060];
+  opts.forEach(o => {
+    const el = document.getElementById(`cost-${o}`);
+    if (el) el.textContent = `${o * ptsPerDiamond} pts`;
+  });
+  document.getElementById('cost-weekly').textContent = `${180 * ptsPerDiamond} pts`;
+  document.getElementById('cost-monthly').textContent = `${800 * ptsPerDiamond} pts`;
+  
+  // Set avatar name details
+  const initial = (userData.name || 'U').trim()[0].toUpperCase();
+  document.getElementById('avatarInitial').textContent = document.getElementById('profileAvatar').textContent = initial;
+  document.getElementById('profileName').textContent = userData.name || 'Agent'; 
+  document.getElementById('profileId').textContent = 'TELEGRAM ID: ' + userData.id;
+  
+  // Points balance mapping
+  const pts = userData.points || 0;
+  const estDiamonds = Math.floor(pts / ptsPerDiamond);
+  
+  document.getElementById('balancePoints').innerHTML = pts.toLocaleString() + ' <span>pts</span>';
+  document.getElementById('balanceDiamonds').textContent = estDiamonds.toLocaleString();
+  
+  document.getElementById('todayPoints').textContent = (userData.todayPoints || 0).toLocaleString();
+  document.getElementById('totalPoints').textContent = (userData.totalPointsEarned || 0).toLocaleString();
+  document.getElementById('referCount').textContent = userData.referCount || 0;
+  
+  // Profile stats mapping
+  document.getElementById('pPoints').textContent = pts.toLocaleString() + ' pts';
+  document.getElementById('pDiamonds').textContent = estDiamonds.toLocaleString() + ' 💎';
+  document.getElementById('pRefers').textContent = userData.referCount || 0;
+  document.getElementById('pEarned').textContent = (userData.totalPointsEarned || 0).toLocaleString() + ' pts';
+  
+  // Render daily tasks list
+  renderTasks();
+  
+  // Manage Tactical Join Missions statuses
+  const officialTasks = userData.officialTasks || [];
+  if (officialTasks.includes('group')) {
+    document.getElementById('status-group').innerHTML = "Completed (Points Claimed)";
+    document.getElementById('status-group').style.color = "var(--muted)";
+  } else {
+    document.getElementById('status-group').innerHTML = `Reward: <b>${globalSettings.earnPerOfficial || 500}</b> Pts`;
+    document.getElementById('status-group').style.color = "var(--muted)";
+  }
+  
+  if (officialTasks.includes('channel')) {
+    document.getElementById('status-channel').innerHTML = "Completed (Points Claimed)";
+    document.getElementById('status-channel').style.color = "var(--muted)";
+  } else {
+    document.getElementById('status-channel').innerHTML = `Reward: <b>${globalSettings.earnPerOfficial || 500}</b> Pts`;
+    document.getElementById('status-channel').style.color = "var(--muted)";
+  }
+
+  // Update slots counters
+  const ad1 = userData.lastDate === today ? (userData.ad1Count || 0) : 0;
+  const ad2 = userData.lastDate === today ? (userData.ad2Count || 0) : 0;
+  document.getElementById('slot1-count').textContent = `Used: ${ad1}/10`;
+  document.getElementById('slot2-count').textContent = `Used: ${ad2}/10`;
+  
+  // Recruitment link configurations
+  document.getElementById('refLinkText').textContent = `https://t.me/${BOT_USERNAME}/${APP_SHORT_NAME}?startapp=${userData.id}`;
+  document.getElementById('refProgressText').textContent = (userData.referCount || 0) + ' / ' + globalSettings.minReferForWithdraw;
+  document.getElementById('refFill').style.width = Math.min(100, ((userData.referCount || 0) / globalSettings.minReferForWithdraw) * 100) + '%';
+  
+  // Lock and unlock redemptions in store
+  const required = globalSettings.minReferForWithdraw || 5;
+  const current = userData.referCount || 0;
+  document.getElementById('refProgressTextWithdraw').textContent = `${current} / ${required}`;
+  document.getElementById('refProgressBar').style.width = Math.min(100, (current / required) * 100) + '%';
+  
+  if (current >= required) { 
+    document.getElementById('withdrawLocked').style.display = 'none'; 
+    document.getElementById('withdrawForm').style.display = 'block'; 
+  } else {
+    document.getElementById('withdrawLocked').style.display = 'block'; 
+    document.getElementById('withdrawForm').style.display = 'none'; 
+  }
+  loadHistory();
+}
+
+async function loadHistory() {
+  try {
+    const refSnap = await get(ref(db, `referrals/${userData.id}`));
+    if(refSnap.exists()) {
+      document.getElementById('refList').innerHTML = `<div class="history-list">` + Object.values(refSnap.val()).map(r => `
+        <div class="history-item">
+          <div class="history-left">
+            <div style="font-weight:700; font-size:14px; color:#fff;">${r.name || 'Recruit'}</div>
+            <div style="font-size:11px; color:var(--muted)">Invited: ${new Date(r.joinedAt).toLocaleDateString()}</div>
+          </div>
+          <span class="status-badge status-paid">✓ Secured</span>
+        </div>
+      `).join('') + `</div>`;
+    }
+  } catch (err) {}
+  
+  try {
+    const wdSnap = await get(ref(db, `withdrawals/${userData.id}`));
+    if(wdSnap.exists()) {
+      document.getElementById('historyList').innerHTML = `<div class="history-list">` + Object.values(wdSnap.val()).reverse().map(w => `
+        <div class="history-item">
+          <div class="history-left">
+            <div style="font-family:'Orbitron'; font-weight:900; color:var(--cyan); font-size:14px;">${w.diamonds} 💎</div>
+            <div style="font-size:11px; color:var(--muted)">UID: ${w.playerUid} · ${w.amountPoints.toLocaleString()} pts</div>
+          </div>
+          <span class="status-badge status-${w.status}">${w.status.toUpperCase()}</span>
+        </div>
+      `).join('') + `</div>`;
+    }
+  } catch (err) {}
+}
+
+window.copyRefLink = function() { 
+  synth.playClick();
+  navigator.clipboard.writeText(document.getElementById('refLinkText').textContent).then(() => showToast('Recruitment link copied!')); 
+};
+
+window.selectRedeemOption = function(diamonds, name) {
+  synth.playClick();
+  const ptsPerDiamond = globalSettings.pointsPerDiamond || 100;
+  selectedDiamonds = diamonds;
+  selectedMethod = name;
+  
+  document.querySelectorAll('.redeem-item').forEach(item => item.classList.remove('selected'));
+  
+  let key = "";
+  if (name.includes("100")) key = "100";
+  else if (name.includes("310")) key = "310";
+  else if (name.includes("520")) key = "520";
+  else if (name.includes("1060")) key = "1060";
+  else if (name.includes("Weekly")) key = "weekly";
+  else if (name.includes("Monthly")) key = "monthly";
+  
+  const el = document.getElementById(`opt-${key}`);
+  if (el) el.classList.add('selected');
+  
+  const cost = diamonds * ptsPerDiamond;
+  document.getElementById('wdSelectedItem').value = `${name} (${cost.toLocaleString()} Points)`;
+};
+
+window.submitRedeem = async function() {
+  synth.playClick();
+  if (!selectedDiamonds) return showToast('Please select a Diamond bundle first!', true);
+  
+  const ptsPerDiamond = globalSettings.pointsPerDiamond || 100;
+  const costPoints = selectedDiamonds * ptsPerDiamond;
+  const playerUid = document.getElementById('wdPlayerUid').value.trim();
+  const playerIgn = document.getElementById('wdPlayerIgn').value.trim();
+  
+  if (!playerUid || playerUid.length < 5) return showToast('Enter valid Free Fire Player UID!', true);
+  if (!playerIgn || playerIgn.length < 2) return showToast('Enter Character In-Game Name!', true);
+  if (costPoints > (userData.points || 0)) return showToast('Insufficient Point inventory!', true);
+  
+  // Submit request mapping to Telegram ID node path
+  await push(ref(db, `withdrawals/${userData.id}`), { 
+    amountPoints: costPoints, 
+    diamonds: selectedDiamonds,
+    method: selectedMethod, 
+    playerUid: playerUid, 
+    ign: playerIgn,
+    status: 'pending', 
+    requestedAt: Date.now(), 
+    userId: userData.id, 
+    name: userData.name 
+  });
+  
+  // Deduct points
+  await update(ref(db, `users/${userData.id}`), { 
+    points: increment(-costPoints),
+    playerUid: playerUid,
+    ign: playerIgn
+  });
+  
+  userData.points -= costPoints; 
+  synth.playWin();
+  showToast('Order placed successfully!'); 
+  
+  document.getElementById('wdPlayerUid').value = '';
+  document.getElementById('wdPlayerIgn').value = '';
+  document.getElementById('wdSelectedItem').value = 'None selected';
+  selectedDiamonds = 0;
+  selectedMethod = "";
+  document.querySelectorAll('.redeem-item').forEach(item => item.classList.remove('selected'));
+  
+  updateUI();
+};
+
+window.showPage = function(page, el) { 
+  synth.playClick();
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active')); 
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active')); 
+  document.getElementById('page-' + page).classList.add('active'); 
+  el.classList.add('active'); 
+};
+
+window.showToast = function(msg, isError = false) { 
+  const t = document.getElementById('toast'); 
+  t.textContent = msg; 
+  t.style.background = isError ? 'var(--red)' : 'var(--accent)'; 
+  t.classList.add('show'); 
+  setTimeout(() => t.classList.remove('show'), 2500); 
+};
+
+init().catch(console.error);
+</script>
+</body>
+</html>
